@@ -1,0 +1,54 @@
+﻿@page "/categorias/nueva"
+@page "/categorias/{ID_Categoria:int}"
+@rendermode InteractiveServer
+@inject NavigationManager navigation;
+@inject ICategoria Repositorio;
+<h3>Categoria</h3>
+<EditForm Model="categoria" FormName="frmCategoria" OnValidSubmit="Agregar">
+    <DataAnnotationsValidator />
+    <div class="form-group">
+        <label for="txtNombre">Nombre</label>
+        <InputText id="txtNombre" class="form-control" @bind-Value="categoria.Nombre" />
+        <ValidationMessage For="@(() => categoria.Nombre)" />
+    </div>
+    <div>
+        @if(categoria.ID_Categoria > 0)
+        {
+            <button class="btn btn-primary" type="submit">Actualizar</button>
+        } else
+        {
+            <button class="btn btn-primary" type="submit">Agregar</button>
+        }
+        <button class="btn btn-danger m-lg-2" @onclick="cancelar">Cancelar</button>
+    </div>
+
+</EditForm>
+@code {
+    [Parameter]
+    public int ID_Categoria { get; set; }
+    private Categoria categoria = new Categoria();
+    protected override async Task OnParametersSetAsync()
+    {
+        if (ID_Categoria > 0)
+        {
+            categoria = await Repositorio.Get(ID_Categoria);
+        }
+    }
+    private void cancelar()
+    {
+        navigation.NavigateTo("categorias");
+    }
+    private async void Agregar()
+    {
+        if (categoria.ID_Categoria> 0)
+        {
+            await Repositorio.Update(categoria);
+        }
+        else
+        {
+            await Repositorio.Add(categoria);
+        }
+        cancelar();
+
+    }
+}

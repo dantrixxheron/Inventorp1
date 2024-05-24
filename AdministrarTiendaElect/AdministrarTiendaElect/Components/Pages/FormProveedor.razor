@@ -1,0 +1,106 @@
+﻿@page "/proveedores/nuevo"
+@page "/proveedores/{ID_Proveedor:int}"
+@rendermode InteractiveServer
+@inject NavigationManager navigation;
+@inject IProveedor Repositorio;
+@inject IProducto RepositorioProducto;
+<PageTitle>Proveedores</PageTitle>
+<h3>Proveedor</h3>
+
+<EditForm Model="proveedor" OnValidSubmit="Agregar">
+    <DataAnnotationsValidator />
+    <div class="form-group">
+        <label for="txtNombre">Nombre</label>
+        <InputText id="txtNombre" class="form-control" @bind-Value="proveedor.Nombre" />
+        <ValidationMessage For="@(() => proveedor.Nombre)" />
+    </div>
+    <div class="form-group">
+        <label for="txtDireccion">Dirección</label>
+        <InputText id="txtDireccion" class="form-control" @bind-Value="proveedor.Direccion" />
+        <ValidationMessage For="@(() => proveedor.Direccion)" />
+    </div>
+    <div class="form-group">
+        <label for="txtPrecio">Teléfono</label>
+        <InputText id="txtPrecio" class="form-control" @bind-Value="proveedor.Telefono" />
+        <ValidationMessage For="@(() => proveedor.Telefono)" />
+    </div>
+    <div class="form-group">
+        <label for="txtCorreo">Correo</label>
+        <InputText id="txtCorreo" class="form-control" @bind-Value="proveedor.Correo" />
+        <ValidationMessage For="@(() => proveedor.Correo)" />
+    </div>
+    <div class="form-group">
+        <InputSelect class="form-select" @bind-Value="productosS" multiple size="2">
+            @foreach (Producto p in productos)
+            {
+                <option value="@p.ID_Producto">@p.Nombre</option>
+            }
+        </InputSelect>
+    </div>
+    <div>
+        @if (proveedor.ID_Proveedor > 0)
+        {
+            <button class="btn btn-primary" type="submit">Actualizar</button>
+        }
+        else
+        {
+            <button class="btn btn-primary" type="submit">Agregar</button>
+        }
+        <button class="btn btn-danger m-lg-2" @onclick="cancelar">Cancelar</button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int ID_Proveedor { get; set; }
+    private Proveedor proveedor = new Proveedor();
+    private List<Producto> productos = new();
+    private int[] productosS=new int[]{};
+    protected override async Task OnParametersSetAsync()
+    {
+        productos = await RepositorioProducto.GetAll();
+        if (ID_Proveedor != 0)
+        {
+            proveedor = await Repositorio.Get(ID_Proveedor);
+            if(proveedor.Productos.Count!=0)
+            {
+                productosS = proveedor.Productos.Select(p => p.ID_Producto).ToArray();
+            }
+            else
+            {
+                productosS = new int[]{};
+            }
+        }
+    }
+
+    private void cancelar()
+    {
+        navigation.NavigateTo("proveedores");
+    }
+
+    private async Task Agregar()
+    {
+        if (productosS.Count() > 0)
+        {
+            List<Producto> pproductos = new();
+            foreach (int id in productosS)
+            {
+                pproductos.Add(productos.First(p => p.ID_Producto == id));
+            }
+            proveedor.Productos=pproductos;
+        }
+        else
+        {
+            proveedor.Productos=null;
+        }
+        if (proveedor.ID_Proveedor > 0)
+        {
+            await Repositorio.Update(proveedor);
+        }
+        else
+        {
+            await Repositorio.Add(proveedor);
+        }
+        cancelar();
+    }
+}

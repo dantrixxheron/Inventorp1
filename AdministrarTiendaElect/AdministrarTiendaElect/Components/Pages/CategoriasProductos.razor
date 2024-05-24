@@ -1,0 +1,45 @@
+﻿@page "/categorias/productos/{ID_Categoria:int}"
+@rendermode InteractiveServer
+@inject ICategoria repositorio;
+<h3>CategoriasProductos @categoria.Nombre</h3>
+@if (categoria.Productos == null|| categoria.Productos.Count == 0)
+{
+    <h2>No existen Productos asociedos</h2>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Precio</th>
+                <th>Existencia</th>
+                <th>Cantidad mínima</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var producto in categoria.Productos)
+            {
+                <tr>
+                    <td>@producto.ID_Producto</td>
+                    <td>@producto.Nombre</td>
+                    <td>@producto.Descripcion</td>
+                    <td>@producto.Precio</td>
+                    <td>@producto.Cant_Stock</td>
+                    <td>@producto.Cant_min</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+@code {
+    [Parameter]
+    public int ID_Categoria { get; set; }
+    private Categoria categoria = new();
+    protected override async Task OnParametersSetAsync()
+    {
+        categoria = await repositorio.Get(ID_Categoria);
+    }
+}
